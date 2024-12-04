@@ -8,7 +8,10 @@ export const listCartPaymentMethods = cache(async function (regionId: string) {
       { region_id: regionId },
       { next: { tags: ["payment_providers"] } }
     )
-    .then(({ payment_providers }) => payment_providers)
+    .then(
+      ({ payment_providers }) =>
+        console.log(payment_providers) || payment_providers
+    )
     .catch(() => {
       return null
     })

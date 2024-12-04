@@ -84,16 +84,48 @@ const Payment = ({
 
   const handleSubmit = async () => {
     setIsLoading(true)
+
     try {
-      const shouldInputCard =
-        isStripeFunc(selectedPaymentMethod) && !activeSession
+      console.log("[Payment] Current state:", {
+        activeSession,
+        selectedPaymentMethod,
+        cart: {
+          payment_sessions: cart.payment_sessions,
+          payment_collection: cart.payment_collection,
+        },
+      })
 
       if (!activeSession) {
-        await initiatePaymentSession(cart, {
+        const result = await initiatePaymentSession(cart, {
           provider_id: selectedPaymentMethod,
+          // === "pp_senangpay_senangpay"
+          //   ? "senangpay"
+          //   : selectedPaymentMethod
+          context: {
+            amount: cart.total,
+            currency_code: cart.region.currency_code,
+            resource_id: cart.id,
+            email: cart.email,
+            name: `${cart.shipping_address?.first_name} ${cart.shipping_address?.last_name}`,
+            phone: cart.shipping_address?.phone,
+          },
+          data: {
+            testing: true,
+          },
         })
+        console.log("[Payment] Session initiation result:", result)
+
+        // Redirect to review step
+        return router.push(
+          pathname + "?" + createQueryString("step", "review"),
+          {
+            scroll: false,
+          }
+        )
       }
 
+      const shouldInputCard =
+        isStripeFunc(selectedPaymentMethod) && !activeSession
       if (!shouldInputCard) {
         return router.push(
           pathname + "?" + createQueryString("step", "review"),
@@ -103,6 +135,7 @@ const Payment = ({
         )
       }
     } catch (err: any) {
+      console.error("[Payment] Error:", err)
       setError(err.message)
     } finally {
       setIsLoading(false)

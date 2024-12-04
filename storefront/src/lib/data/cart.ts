@@ -217,15 +217,25 @@ export async function initiatePaymentSession(
   data: {
     provider_id: string
     context?: Record<string, unknown>
+    data?: Record<string, unknown>
   }
 ) {
+  console.log("[initiatePaymentSession] Starting with data:", data)
   return sdk.store.payment
     .initiatePaymentSession(cart, data, {}, getAuthHeaders())
     .then((resp) => {
+      console.log("[initiatePaymentSession] Raw API response:", resp)
+      console.log(
+        "[initiatePaymentSession] Payment session data:",
+        resp?.payment_collection
+      )
       revalidateTag("cart")
       return resp
     })
-    .catch(medusaError)
+    .catch((err) => {
+      console.error("[initiatePaymentSession] Error:", err)
+      return medusaError(err)
+    })
 }
 
 export async function applyPromotions(codes: string[]) {

@@ -30,6 +30,10 @@ export const paymentInfoMap: Record<
     title: "Manual Payment",
     icon: <CreditCard />,
   },
+  pp_senangpay_senangpay: {
+    title: "SenangPay",
+    icon: <CreditCard />,
+  },
   // Add more payment providers here
 }
 
@@ -42,6 +46,12 @@ export const isPaypal = (providerId?: string) => {
 }
 export const isManual = (providerId?: string) => {
   return providerId?.startsWith("pp_system_default")
+}
+
+// Add a helper function to check if provider is SenangPay
+export const isSenangPay = (providerId?: string) => {
+  console.log("[isSenangPay] Provider ID:", providerId)
+  return providerId?.startsWith("senangpay")
 }
 
 // Add currencies that don't need to be divided by 100
