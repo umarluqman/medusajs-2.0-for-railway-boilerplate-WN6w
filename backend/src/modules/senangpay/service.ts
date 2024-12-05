@@ -5,6 +5,9 @@ import {
   WebhookActionResult,
   CreatePaymentProviderSession,
   UpdatePaymentProviderSession,
+  Logger,
+  ConfigModule,
+  MedusaContainer,
 } from "@medusajs/types";
 import {
   AbstractPaymentProvider,
@@ -48,14 +51,12 @@ class SenangPayService extends AbstractPaymentProvider<SenangPayOptions> {
   static identifier = "senangpay";
 
   protected options: SenangPayOptions;
+  private logger: Logger;
 
-  constructor(container, options: SenangPayOptions) {
+  constructor(container: MedusaContainer, options: SenangPayOptions) {
     super(container);
 
-    // Register both IDs in the container
-    const transformedId = `pp_${SenangPayService.identifier}_${SenangPayService.identifier}`;
-    container[transformedId] = this;
-    container[SenangPayService.identifier] = this;
+    this.logger = container.resolve("logger");
 
     if (!options?.merchantId || !options?.merchantKey) {
       throw new Error(
@@ -73,23 +74,20 @@ class SenangPayService extends AbstractPaymentProvider<SenangPayOptions> {
   async initiatePayment(
     input: CreatePaymentProviderSession
   ): Promise<PaymentProviderError | PaymentProviderSessionResponse> {
-    console.log("xxxxxxx [SenangPay] initiatePayment");
     try {
-      console.log("[SenangPay] Provider ID:", SenangPayService.identifier);
-      console.log("[SenangPay] Provider ID: more info", input);
+      this.logger.info(`[service] id: ${SenangPayService.identifier}`);
       const { amount, currency_code } = input;
+      this.logger.info(
+        `[service] amount and currency: ${amount}, ${currency_code}`
+      );
+
       const { email, session_id, resource_id, customer } = input.context as {
         email?: string;
         session_id?: string;
         resource_id: string;
         customer?: any;
       };
-
-      console.log("[SenangPay] Initiating payment with input:", {
-        amount,
-        currency_code,
-        context: input.context,
-      });
+      this.logger.info(`[service] context: ${JSON.stringify(input.context)}`);
 
       if (!amount || !resource_id) {
         throw new Error(
@@ -135,13 +133,15 @@ class SenangPayService extends AbstractPaymentProvider<SenangPayOptions> {
         },
       };
 
-      console.log("[SenangPay] Created session data:", sessionData);
+      this.logger.info(
+        `[service] session data: ${JSON.stringify(sessionData)}`
+      );
 
       return {
         data: sessionData,
       };
     } catch (error) {
-      console.error("[SenangPay] Error in initiatePayment:", error);
+      this.logger.error(`[service] error: ${error}`);
       return {
         error: error.message,
         code: "unknown",

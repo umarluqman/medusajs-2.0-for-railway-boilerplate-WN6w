@@ -139,7 +139,7 @@ const medusaConfig = {
       options: {
         providers: [
           {
-            resolve: "./src/modules/payment/senangpay",
+            resolve: "./src/modules/senangpay",
             id: "senangpay",
             options: {
               merchantId: process.env.SENANGPAY_MERCHANT_ID,
