@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@medusajs/admin-sdk':
         specifier: latest
-        version: 2.0.4(zod@3.22.4)
+        version: 2.0.4(zod@3.23.8)
       '@medusajs/cli':
         specifier: latest
         version: 2.0.4(@mikro-orm/core@5.9.7)(@mikro-orm/knex@5.9.7(@mikro-orm/core@5.9.7)(@mikro-orm/migrations@5.9.7)(pg@8.13.1))(@mikro-orm/migrations@5.9.7)(@mikro-orm/postgresql@5.9.7(@mikro-orm/core@5.9.7)(@mikro-orm/migrations@5.9.7))(awilix@8.0.1)(ioredis@5.4.1)(pg@8.13.1)(vite@5.4.11(@types/node@20.17.6))
@@ -20,6 +20,9 @@ importers:
       '@medusajs/framework':
         specifier: latest
         version: 2.0.4(@medusajs/cli@2.0.4(@mikro-orm/core@5.9.7)(@mikro-orm/knex@5.9.7(@mikro-orm/core@5.9.7)(@mikro-orm/migrations@5.9.7)(pg@8.13.1))(@mikro-orm/migrations@5.9.7)(@mikro-orm/postgresql@5.9.7(@mikro-orm/core@5.9.7)(@mikro-orm/migrations@5.9.7))(awilix@8.0.1)(ioredis@5.4.1)(pg@8.13.1)(vite@5.4.11(@types/node@20.17.6)))(@mikro-orm/cli@5.9.7(@mikro-orm/migrations@5.9.7)(@mikro-orm/postgresql@5.9.7(@mikro-orm/core@5.9.7)(@mikro-orm/migrations@5.9.7))(pg@8.13.1))(@mikro-orm/core@5.9.7)(@mikro-orm/knex@5.9.7(@mikro-orm/core@5.9.7)(@mikro-orm/migrations@5.9.7)(pg@8.13.1))(@mikro-orm/migrations@5.9.7)(@mikro-orm/postgresql@5.9.7(@mikro-orm/core@5.9.7)(@mikro-orm/migrations@5.9.7))(awilix@8.0.1)(ioredis@5.4.1)(pg@8.13.1)(vite@5.4.11(@types/node@20.17.6))
+      '@medusajs/icons':
+        specifier: ^2.1.0
+        version: 2.1.0(react@18.3.1)
       '@medusajs/medusa':
         specifier: latest
         version: 2.0.4(2bv6quxqrsccv6r24nard472fm)
@@ -32,6 +35,9 @@ importers:
       '@medusajs/types':
         specifier: latest
         version: 2.0.4(awilix@8.0.1)(ioredis@5.4.1)(vite@5.4.11(@types/node@20.17.6))
+      '@medusajs/ui':
+        specifier: ^4.0.1
+        version: 4.0.1(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.3)
       '@medusajs/utils':
         specifier: latest
         version: 2.0.4(@mikro-orm/core@5.9.7)(@mikro-orm/knex@5.9.7(@mikro-orm/core@5.9.7)(@mikro-orm/migrations@5.9.7)(pg@8.13.1))(@mikro-orm/migrations@5.9.7)(@mikro-orm/postgresql@5.9.7(@mikro-orm/core@5.9.7)(@mikro-orm/migrations@5.9.7))(awilix@8.0.1)(express@4.21.1)(ioredis@5.4.1)(pg@8.13.1)(vite@5.4.11(@types/node@20.17.6))
@@ -74,6 +80,9 @@ importers:
       ulid:
         specifier: ^2.3.0
         version: 2.3.0
+      zod:
+        specifier: ^3.23.8
+        version: 3.23.8
     devDependencies:
       '@medusajs/test-utils':
         specifier: latest
@@ -1447,6 +1456,11 @@ packages:
 
   '@medusajs/icons@2.0.4':
     resolution: {integrity: sha512-eAMg1FWRWA34WdUwynOdF4HiesSs35+wVfsVN1QGj+snO4uu0ljzrUDunM3XhJUnYefdr56Moww1JzVHBtZJKA==}
+    peerDependencies:
+      react: ^16.x || ^17.x || ^18.x
+
+  '@medusajs/icons@2.1.0':
+    resolution: {integrity: sha512-ZdgBqFpOD7A297Y1xNGHeczv9Gn4wNhru1KarsLdmc+fPP3mx/jN2r/tJjTPkkMwj5zLAwXfK0Y8vnwNJnEs8w==}
     peerDependencies:
       react: ^16.x || ^17.x || ^18.x
 
@@ -7018,6 +7032,9 @@ packages:
   zod@3.22.4:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
 
+  zod@3.23.8:
+    resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
+
 snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
@@ -8674,10 +8691,10 @@ snapshots:
       - ts-node
       - typescript
 
-  '@medusajs/admin-sdk@2.0.4(zod@3.22.4)':
+  '@medusajs/admin-sdk@2.0.4(zod@3.23.8)':
     dependencies:
       '@medusajs/admin-shared': 2.0.4
-      zod: 3.22.4
+      zod: 3.23.8
 
   '@medusajs/admin-shared@2.0.4': {}
 
@@ -8935,6 +8952,10 @@ snapshots:
       awilix: 8.0.1
 
   '@medusajs/icons@2.0.4(react@18.3.1)':
+    dependencies:
+      react: 18.3.1
+
+  '@medusajs/icons@2.1.0(react@18.3.1)':
     dependencies:
       react: 18.3.1
 
@@ -9268,7 +9289,7 @@ snapshots:
 
   '@medusajs/ui@4.0.1(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.3)':
     dependencies:
-      '@medusajs/icons': 2.0.4(react@18.3.1)
+      '@medusajs/icons': 2.1.0(react@18.3.1)
       '@radix-ui/react-accordion': 1.2.0(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-alert-dialog': 1.1.1(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-avatar': 1.1.0(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -15605,3 +15626,5 @@ snapshots:
   yoctocolors-cjs@2.1.2: {}
 
   zod@3.22.4: {}
+
+  zod@3.23.8: {}
