@@ -47,6 +47,9 @@ const medusaConfig = {
       resolve: "./src/modules/supplier",
     },
     {
+      resolve: "./src/modules/store-analytics",
+    },
+    {
       key: Modules.FILE,
       resolve: "@medusajs/file",
       options: {
