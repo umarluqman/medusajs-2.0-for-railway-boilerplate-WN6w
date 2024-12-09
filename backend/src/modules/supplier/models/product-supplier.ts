@@ -3,11 +3,11 @@ import { Supplier } from "./supplier";
 
 const ProductSupplier = model.define("product_supplier", {
   id: model.id().primaryKey(),
-  supplier: model.belongsTo(() => Supplier, {
-    mappedBy: "products",
-  }),
+  supplier_id: model.text(),
   product_id: model.text(),
-  // Additional fields specific to the supplier-product relationship
+  supplierRelation: model.belongsTo(() => Supplier, {
+    mappedBy: "supplierProducts",
+  }),
   supply_price: model.number().nullable(),
   minimum_order_quantity: model.number().nullable(),
 });

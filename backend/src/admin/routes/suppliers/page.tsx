@@ -200,7 +200,9 @@ const SuppliersPage = () => {
       <Drawer open={isOpen} onOpenChange={setIsOpen}>
         <Drawer.Content>
           <Drawer.Header>
-            <Drawer.Title>Add Supplier</Drawer.Title>
+            <Drawer.Title>
+              {(editingSupplier ? "Edit" : "Add") + "Supplier"}
+            </Drawer.Title>
           </Drawer.Header>
           <Drawer.Body>
             <form className="flex flex-col gap-y-4">

@@ -28,35 +28,45 @@ export const updateProductSupplierStep = createStep(
     const remoteLink = container.resolve("remoteLink");
     const logger = container.resolve("logger");
 
-    // Remove existing supplier links
-    const existingLinks = await remoteLink.list({
-      [Modules.PRODUCT]: {
-        product_id: input.product_id,
-      },
-      relation: SUPPLIER_MODULE,
-    });
+    try {
+      logger.info("Before remove", { input });
+      // Remove existing supplier links
+      const existingLinks = await remoteLink.list({
+        [Modules.PRODUCT]: {
+          product_id: input.product_id,
+        },
+        relation: SUPPLIER_MODULE,
+      });
 
-    if (existingLinks.length) {
-      await remoteLink.dismiss(existingLinks);
+      logger.info("After remove");
+
+      console.log({ input, existingLinks });
+
+      if (existingLinks.length) {
+        await remoteLink.dismiss(existingLinks);
+      }
+
+      // Create new link with additional data
+      const link: LinkDefinition = {
+        [Modules.PRODUCT]: {
+          product_id: input.product_id,
+        },
+        [SUPPLIER_MODULE]: {
+          supplier_id: input.supplier_id,
+          supply_price: input.supply_price,
+          minimum_order_quantity: input.minimum_order_quantity,
+        },
+      };
+
+      await remoteLink.create([link]);
+
+      logger.info("Updated product supplier relationship");
+
+      return new StepResponse(link, link);
+    } catch (error) {
+      logger.error("Error in update-product-supplier-step:", error);
+      throw error;
     }
-
-    // Create new link with additional data
-    const link: LinkDefinition = {
-      [Modules.PRODUCT]: {
-        product_id: input.product_id,
-      },
-      [SUPPLIER_MODULE]: {
-        supplier_id: input.supplier_id,
-        supply_price: input.supply_price,
-        minimum_order_quantity: input.minimum_order_quantity,
-      },
-    };
-
-    await remoteLink.create([link]);
-
-    logger.info("Updated product supplier relationship");
-
-    return new StepResponse(link, link);
   },
   async (link, { container }) => {
     if (!link) {
