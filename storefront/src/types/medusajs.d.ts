@@ -1,0 +1,5 @@
+declare module "@medusajs/icons"
+declare module "@medusajs/ui"
+declare module "@medusajs/ui-preset"
+declare module "@medusajs/product"
+declare module "@medusajs/modules-sdk"
