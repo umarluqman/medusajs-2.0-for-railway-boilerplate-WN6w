@@ -17,9 +17,10 @@ import { EllipsisHorizontal, PencilSquare } from "@medusajs/icons";
 type SupplierData = {
   id: string;
   name: string;
-  email?: string;
+  phone?: string;
   supply_price?: number;
   minimum_order_quantity?: number;
+  product_supplier_id?: string;
 };
 
 const ProductSupplierWidget = ({ data }: DetailWidgetProps<AdminProduct>) => {
@@ -35,24 +36,53 @@ const ProductSupplierWidget = ({ data }: DetailWidgetProps<AdminProduct>) => {
   useEffect(() => {
     if (!loading) return;
 
-    fetch(`/admin/products/${data.id}?fields=+supplier.*,+product_supplier.*`, {
+    fetch(`/admin/products/${data.id}?fields=+product_supplier.*`, {
       credentials: "include",
     })
       .then((res) => res.json())
       .then(({ product }) => {
-        if (product.supplier) {
-          setSupplier({
-            ...product.supplier,
-            supply_price: product.product_supplier?.supply_price,
-            minimum_order_quantity:
-              product.product_supplier?.minimum_order_quantity,
-          });
-          setSupplyPrice(
-            product.product_supplier?.supply_price?.toString() || ""
-          );
-          setMinOrderQty(
-            product.product_supplier?.minimum_order_quantity?.toString() || ""
-          );
+        // console.log("product", product);
+        console.log(
+          "product?.product_supplier?.supplier_id",
+          product?.product_supplier?.[5]?.supplier_id
+        );
+        setSelectedSupplierId(product.product_supplier?.[5]?.supplier_id ?? "");
+        setSupplyPrice(
+          product.product_supplier?.[5]?.supply_price?.toString() || ""
+        );
+        setMinOrderQty(
+          product.product_supplier?.[5]?.minimum_order_quantity?.toString() ||
+            ""
+        );
+        if (product?.product_supplier?.[5]?.supplier_id) {
+          fetch(
+            `/admin/suppliers/${product.product_supplier?.[5].supplier_id}`,
+            {
+              credentials: "include",
+            }
+          )
+            .then((res) => res.json())
+            .then((result) => {
+              console.log("supplier result", result);
+              console.log("supplier result.supplier", result?.supplier);
+              console.log(
+                "product_supplier result",
+                product.product_supplier?.[5]
+              );
+              if (result?.supplier) {
+                setSupplier({
+                  id: result.supplier.id,
+                  name: result.supplier.name,
+                  phone: result.supplier.phone,
+                  supply_price:
+                    product.product_supplier?.[5]?.supply_price?.toString() ||
+                    "",
+                  minimum_order_quantity:
+                    product.product_supplier?.[5]?.minimum_order_quantity?.toString(),
+                  product_supplier_id: product.product_supplier?.[5]?.id || "",
+                });
+              }
+            });
         }
         setLoading(false);
       });
@@ -84,8 +114,13 @@ const ProductSupplierWidget = ({ data }: DetailWidgetProps<AdminProduct>) => {
         },
         body: JSON.stringify({
           supplier_id: selectedSupplierId,
+          product_id: data.id, // Add this line
           supply_price: supplyPrice ? parseFloat(supplyPrice) : null,
           minimum_order_quantity: minOrderQty ? parseInt(minOrderQty) : null,
+          // TODO:
+          type: supplier?.product_supplier_id ? "update" : "create",
+          // type: "update",
+          product_supplier_id: supplier?.product_supplier_id ?? undefined,
         }),
       });
 
@@ -104,6 +139,8 @@ const ProductSupplierWidget = ({ data }: DetailWidgetProps<AdminProduct>) => {
       setIsUpdating(false);
     }
   };
+
+  console.log({ supplier, minOrderQty, supplyPrice });
 
   return (
     <Container className="divide-y p-0">
@@ -133,21 +170,32 @@ const ProductSupplierWidget = ({ data }: DetailWidgetProps<AdminProduct>) => {
       </div>
 
       {supplier && (
-        <div className="px-6 py-4">
-          <span>{supplier.name}</span>
-          {supplier.email && (
-            <span className="block text-ui-fg-subtle">{supplier.email}</span>
-          )}
-          {supplier.supply_price && (
-            <span className="block text-ui-fg-subtle">
-              Supply Price: {supplier.supply_price}
-            </span>
-          )}
-          {supplier.minimum_order_quantity && (
-            <span className="block text-ui-fg-subtle">
-              Min Order Qty: {supplier.minimum_order_quantity}
-            </span>
-          )}
+        <div className="px-6 py-4 space-y-4">
+          <div className="flex flex-col">
+            <Text weight="plus" className="mb-2">
+              {supplier.name}
+            </Text>
+            {supplier.phone && <Text>{`+6${supplier.phone}`}</Text>}
+          </div>
+          <div className=" space-y-2">
+            {supplier.supply_price && (
+              <Text>
+                <Text as="span" weight="plus">
+                  RM {supplier.supply_price}
+                </Text>{" "}
+                per unit
+              </Text>
+            )}
+            {supplier.minimum_order_quantity && (
+              <Text>
+                Minimum Order{" "}
+                <Text as="span" weight="plus">
+                  {supplier.minimum_order_quantity.toLocaleString()}{" "}
+                </Text>
+                units
+              </Text>
+            )}
+          </div>
         </div>
       )}
 
@@ -177,7 +225,7 @@ const ProductSupplierWidget = ({ data }: DetailWidgetProps<AdminProduct>) => {
             </div>
 
             <div>
-              <Text className="mb-2">Supply Price</Text>
+              <Text className="mb-2">Price Per Unit (RM)</Text>
               <Input
                 type="number"
                 step="0.01"
@@ -188,7 +236,7 @@ const ProductSupplierWidget = ({ data }: DetailWidgetProps<AdminProduct>) => {
             </div>
 
             <div>
-              <Text className="mb-2">Minimum Order Quantity</Text>
+              <Text className="mb-2">Minimum Order Quantity (units)</Text>
               <Input
                 type="number"
                 value={minOrderQty}

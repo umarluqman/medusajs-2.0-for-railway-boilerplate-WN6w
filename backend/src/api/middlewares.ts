@@ -6,9 +6,9 @@ export default defineMiddlewares({
     {
       matcher: "/admin/products",
       method: ["POST"],
-      additionalDataValidator: {
-        supplier_id: z.string().optional(),
-      },
+      // additionalDataValidator: {
+      //   product_supplier_id: z.string().optional(),
+      // },
     },
   ],
 });
