@@ -3,6 +3,10 @@
   "compilerOptions": {
     "module": "esnext"
   },
-  "include": ["."],
+  "include": [
+    ".",
+    "../api/admin/suppliers/route.ts",
+    "../api/admin/suppliers/validators.ts"
+  ],
   "exclude": ["**/*.spec.js"]
 }
