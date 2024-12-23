@@ -143,7 +143,7 @@ const medusaConfig = {
             id: "senangpay",
             options: {
               merchantId: process.env.SENANGPAY_MERCHANT_ID,
-              merchantKey: process.env.SENANGPAY_MERCHANT_KEY,
+              secretKey: process.env.SENANGPAY_SECRET_KEY,
               sandbox: process.env.SENANGPAY_SANDBOX === "true",
             },
           },

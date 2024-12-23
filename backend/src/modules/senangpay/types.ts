@@ -1,6 +1,6 @@
 export interface SenangPayOptions {
   merchantId: string;
-  merchantKey: string;
+  secretKey: string;
   sandbox?: boolean;
 }
 

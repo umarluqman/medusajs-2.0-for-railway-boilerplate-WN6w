@@ -12,6 +12,7 @@ import {
 import {
   AbstractPaymentProvider,
   BigNumber,
+  MedusaError,
   PaymentActions,
   PaymentSessionStatus,
 } from "@medusajs/utils";
@@ -19,7 +20,7 @@ import crypto from "crypto";
 
 type SenangPayOptions = {
   merchantId: string;
-  merchantKey: string;
+  secretKey: string;
   sandbox?: boolean;
 };
 
@@ -53,20 +54,23 @@ class SenangPayService extends AbstractPaymentProvider<SenangPayOptions> {
   protected options: SenangPayOptions;
   private logger: Logger;
 
+  static validateOptions(options: Record<any, any>) {
+    if (!options?.merchantId || !options?.secretKey) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        "SenangPay payment provider requires both merchantId and secretKey options"
+      );
+    }
+  }
+
   constructor(container: MedusaContainer, options: SenangPayOptions) {
     super(container);
 
     this.logger = container.resolve("logger");
 
-    if (!options?.merchantId || !options?.merchantKey) {
-      throw new Error(
-        "SenangPay payment provider requires both merchantId and merchantKey options"
-      );
-    }
-
     this.options = {
       merchantId: options.merchantId,
-      merchantKey: options.merchantKey,
+      secretKey: options.secretKey,
       sandbox: options.sandbox ?? true,
     };
   }
@@ -99,12 +103,12 @@ class SenangPayService extends AbstractPaymentProvider<SenangPayOptions> {
       const formattedAmount = ((amount as number) / 100).toFixed(2);
       const detail = `Order_${resource_id}`;
 
-      // Hash should be: merchantKey + detail + amount + order_id
+      // Hash should be: secretKey + detail + amount + order_id
       const tobeHashed =
-        this.options.merchantKey + detail + formattedAmount + resource_id;
+        this.options.secretKey + detail + formattedAmount + resource_id;
 
       const hash = crypto
-        .createHmac("sha256", this.options.merchantKey)
+        .createHmac("sha256", this.options.secretKey)
         .update(tobeHashed)
         .digest("hex");
 
@@ -271,10 +275,10 @@ class SenangPayService extends AbstractPaymentProvider<SenangPayOptions> {
       data.data;
 
     const toBeHashed =
-      this.options.merchantKey + status_id + order_id + transaction_id + msg;
+      this.options.secretKey + status_id + order_id + transaction_id + msg;
 
     const calculatedHash = crypto
-      .createHmac("sha256", this.options.merchantKey)
+      .createHmac("sha256", this.options.secretKey)
       .update(toBeHashed)
       .digest("hex");
 
