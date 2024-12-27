@@ -6,8 +6,6 @@ import {
   CreatePaymentProviderSession,
   UpdatePaymentProviderSession,
   Logger,
-  ConfigModule,
-  MedusaContainer,
 } from "@medusajs/types";
 import {
   AbstractPaymentProvider,
@@ -44,15 +42,15 @@ type SenangPaySessionData = {
   msg?: string;
 };
 
-type SenangPaySessionResponse = PaymentProviderSessionResponse & {
-  data: SenangPaySessionData;
+type InjectedDependencies = {
+  logger: Logger;
 };
 
 class SenangPayService extends AbstractPaymentProvider<SenangPayOptions> {
   static identifier = "senangpay";
 
   protected options: SenangPayOptions;
-  private logger: Logger;
+  protected logger_: Logger;
 
   static validateOptions(options: Record<any, any>) {
     if (!options?.merchantId || !options?.secretKey) {
@@ -63,10 +61,11 @@ class SenangPayService extends AbstractPaymentProvider<SenangPayOptions> {
     }
   }
 
-  constructor(container: MedusaContainer, options: SenangPayOptions) {
-    super(container);
+  constructor({ logger }: InjectedDependencies, options: SenangPayOptions) {
+    //@ts-ignore
+    super(...arguments);
 
-    this.logger = container.resolve("logger");
+    this.logger_ = logger;
 
     this.options = {
       merchantId: options.merchantId,
@@ -79,76 +78,67 @@ class SenangPayService extends AbstractPaymentProvider<SenangPayOptions> {
     input: CreatePaymentProviderSession
   ): Promise<PaymentProviderError | PaymentProviderSessionResponse> {
     try {
-      this.logger.info(`[service] id: ${SenangPayService.identifier}`);
+      this.logger_.info(`[SenangPay] Initiating payment...`);
       const { amount, currency_code } = input;
-      this.logger.info(
-        `[service] amount and currency: ${amount}, ${currency_code}`
-      );
 
-      const { email, session_id, resource_id, customer } = input.context as {
+      // Extract context data
+      const { email, name, phone, resource_id } = input.context as {
         email?: string;
-        session_id?: string;
+        name?: string;
+        phone?: string;
         resource_id: string;
-        customer?: any;
       };
-      this.logger.info(`[service] context: ${JSON.stringify(input.context)}`);
 
       if (!amount || !resource_id) {
-        throw new Error(
-          "Missing required fields: amount and resource_id are required"
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          "Missing required fields: amount and resource_id"
         );
       }
 
       // Format amount to 2 decimal places
-      const formattedAmount = ((amount as number) / 100).toFixed(2);
+      const formattedAmount = (amount as number).toFixed(2);
       const detail = `Order_${resource_id}`;
 
-      // Hash should be: secretKey + detail + amount + order_id
+      // Generate hash
       const tobeHashed =
         this.options.secretKey + detail + formattedAmount + resource_id;
-
       const hash = crypto
         .createHmac("sha256", this.options.secretKey)
         .update(tobeHashed)
         .digest("hex");
 
-      const sessionData = {
-        id: session_id,
-        amount: amount,
-        currency_code: currency_code,
-        provider_id: SenangPayService.identifier,
-        status: PaymentSessionStatus.PENDING,
-        data: {
-          merchantId: this.options.merchantId,
-          hash,
-          formatted_amount: formattedAmount,
-          order_id: resource_id,
-          detail,
-          payment_url: `${
-            this.options.sandbox
-              ? "https://sandbox.senangpay.my"
-              : "https://app.senangpay.my"
-          }/payment/${this.options.merchantId}`,
-          email: email || "",
-          metadata: {
-            session_id,
-            resource_id,
-          },
-        },
+      // Construct payment session data
+      const data: SenangPaySessionData = {
+        merchantId: this.options.merchantId,
+        hash,
+        amount: formattedAmount,
+        order_id: resource_id,
+        detail,
+        payment_url: `${
+          this.options.sandbox
+            ? "https://sandbox.senangpay.my"
+            : "https://app.senangpay.my"
+        }/payment/${this.options.merchantId}`,
+        name: name || "",
+        email: email || "",
+        phone: phone || "",
       };
 
-      this.logger.info(
-        `[service] session data: ${JSON.stringify(sessionData)}`
+      this.logger_.info(
+        `[SenangPay] Created session data: ${JSON.stringify(data)}`
       );
 
       return {
-        data: sessionData,
+        data,
       };
     } catch (error) {
-      this.logger.error(`[service] error: ${error}`);
+      this.logger_.error(
+        `[SenangPay] Error initiating payment: ${error.message}`
+      );
       return {
         error: error.message,
-        code: "unknown",
+        code: error instanceof MedusaError ? error.type : "unknown_error",
         detail: error,
       };
     }
@@ -174,11 +164,25 @@ class SenangPayService extends AbstractPaymentProvider<SenangPayOptions> {
   async authorizePayment(
     paymentSessionData: SenangPaySessionData
   ): Promise<{ status: PaymentSessionStatus; data: Record<string, unknown> }> {
-    const status = await this.getPaymentStatus(paymentSessionData);
-    return {
-      status,
-      data: paymentSessionData,
-    };
+    try {
+      this.logger_.info(`[SenangPay] Authorizing payment...`);
+      const status = await this.getPaymentStatus(paymentSessionData);
+
+      if (status === PaymentSessionStatus.ERROR) {
+        throw new MedusaError(
+          MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR,
+          "Payment authorization failed"
+        );
+      }
+
+      return {
+        status,
+        data: paymentSessionData,
+      };
+    } catch (error) {
+      this.logger_.error(`[SenangPay] Authorization error: ${error.message}`);
+      throw error;
+    }
   }
 
   async capturePayment(
@@ -287,6 +291,7 @@ class SenangPayService extends AbstractPaymentProvider<SenangPayOptions> {
     }
 
     const webhookData = {
+      status: status_id,
       session_id: order_id as string,
       amount: amount ? new BigNumber(amount as string) : new BigNumber(0),
     };

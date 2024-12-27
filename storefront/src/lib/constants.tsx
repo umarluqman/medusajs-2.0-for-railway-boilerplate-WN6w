@@ -51,7 +51,7 @@ export const isManual = (providerId?: string) => {
 // Add a helper function to check if provider is SenangPay
 export const isSenangPay = (providerId?: string) => {
   console.log("[isSenangPay] Provider ID:", providerId)
-  return providerId?.startsWith("senangpay")
+  return providerId?.includes("senangpay")
 }
 
 // Add currencies that don't need to be divided by 100

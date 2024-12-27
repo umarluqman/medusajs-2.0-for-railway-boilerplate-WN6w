@@ -225,15 +225,27 @@ export async function initiatePaymentSession(
     .initiatePaymentSession(cart, data, {}, getAuthHeaders())
     .then((resp) => {
       console.log("[initiatePaymentSession] Raw API response:", resp)
+
+      // Add null check and better error handling
+      if (!resp || !resp.payment_collection) {
+        throw new Error("Invalid response from payment session initiation")
+      }
+
+      const paymentCollection = resp.payment_collection
       console.log(
-        "[initiatePaymentSession] Payment session data:",
-        resp?.payment_collection
+        "[initiatePaymentSession] Payment collection:",
+        paymentCollection
       )
+
       revalidateTag("cart")
-      return resp
+      return paymentCollection
     })
     .catch((err) => {
-      console.error("[initiatePaymentSession] Error:", err)
+      console.error("[initiatePaymentSession] Error details:", {
+        message: err.message,
+        response: err.response?.data,
+        stack: err.stack,
+      })
       return medusaError(err)
     })
 }
@@ -372,7 +384,7 @@ export async function placeOrder() {
       return cartRes
     })
     .catch(medusaError)
-
+  // check if the payment from senangpay
   if (cartRes?.type === "order") {
     const countryCode =
       cartRes.order.shipping_address?.country_code?.toLowerCase()

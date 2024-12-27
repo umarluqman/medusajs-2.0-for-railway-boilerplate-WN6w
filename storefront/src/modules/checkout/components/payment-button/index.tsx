@@ -37,7 +37,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   // }
 
   const paymentSession = cart.payment_collection?.payment_sessions?.[0]
-  console.log("PS", { paymentSession })
+  console.log("PS", { paymentSession, cart, notReady })
   switch (true) {
     case isSenangPay(paymentSession?.provider_id):
       return (
@@ -275,13 +275,15 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const onPaymentCompleted = async () => {
-    await placeOrder()
+    const order = await placeOrder()
       .catch((err) => {
         setErrorMessage(err.message)
       })
       .finally(() => {
         setSubmitting(false)
       })
+
+    console.log("[ManualTestPaymentButton] Order:", { order })
   }
 
   const handlePayment = () => {
