@@ -56,6 +56,7 @@ const Register = ({ setCurrentView }: Props) => {
             label="Phone"
             name="phone"
             type="tel"
+            required
             autoComplete="tel"
             data-testid="phone-input"
           />
