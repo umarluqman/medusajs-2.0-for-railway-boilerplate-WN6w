@@ -41,11 +41,6 @@ const ProductSupplierWidget = ({ data }: DetailWidgetProps<AdminProduct>) => {
     })
       .then((res) => res.json())
       .then(({ product }) => {
-        // console.log("product", product);
-        console.log(
-          "product?.product_supplier?.supplier_id",
-          product?.product_supplier?.[5]?.supplier_id
-        );
         setSelectedSupplierId(product.product_supplier?.[5]?.supplier_id ?? "");
         setSupplyPrice(
           product.product_supplier?.[5]?.supply_price?.toString() || ""
@@ -63,12 +58,6 @@ const ProductSupplierWidget = ({ data }: DetailWidgetProps<AdminProduct>) => {
           )
             .then((res) => res.json())
             .then((result) => {
-              console.log("supplier result", result);
-              console.log("supplier result.supplier", result?.supplier);
-              console.log(
-                "product_supplier result",
-                product.product_supplier?.[5]
-              );
               if (result?.supplier) {
                 setSupplier({
                   id: result.supplier.id,
@@ -139,8 +128,6 @@ const ProductSupplierWidget = ({ data }: DetailWidgetProps<AdminProduct>) => {
       setIsUpdating(false);
     }
   };
-
-  console.log({ supplier, minOrderQty, supplyPrice });
 
   return (
     <Container className="divide-y p-0">

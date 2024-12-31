@@ -44,6 +44,9 @@ const medusaConfig = {
   },
   modules: [
     {
+      resolve: "./src/modules/product-video",
+    },
+    {
       resolve: "./src/modules/supplier",
     },
     {
