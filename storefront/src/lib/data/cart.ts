@@ -380,10 +380,12 @@ export async function placeOrder() {
   const cartRes = await sdk.store.cart
     .complete(cartId, {}, getAuthHeaders())
     .then((cartRes) => {
+      console.log("cartRes", cartRes)
       revalidateTag("cart")
       return cartRes
     })
     .catch(medusaError)
+  // console.log({ cartRes })
   // check if the payment from senangpay
   if (cartRes?.type === "order") {
     const countryCode =

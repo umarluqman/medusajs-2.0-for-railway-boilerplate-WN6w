@@ -42,6 +42,19 @@ type SenangPaySessionData = {
   msg?: string;
 };
 
+type SenangPayCallbackParams = {
+  status_id: string;
+  transaction_id: string;
+  msg: string;
+  order_id: string;
+  hash: string;
+  amount: string;
+  name: string;
+  email: string;
+  phone: string;
+  type: string;
+};
+
 type InjectedDependencies = {
   logger: Logger;
 };
@@ -103,10 +116,20 @@ class SenangPayService extends AbstractPaymentProvider<SenangPayOptions> {
       // Generate hash
       const tobeHashed =
         this.options.secretKey + detail + formattedAmount + resource_id;
+
+      this.logger_.info(`[SenangPay] Hash Generation:`);
+      this.logger_.info(`- Secret Key: ${this.options.secretKey}`);
+      this.logger_.info(`- Detail: ${detail}`);
+      this.logger_.info(`- Amount: ${formattedAmount}`);
+      this.logger_.info(`- Order ID: ${resource_id}`);
+      this.logger_.info(`- To be hashed string: ${tobeHashed}`);
+
       const hash = crypto
         .createHmac("sha256", this.options.secretKey)
         .update(tobeHashed)
         .digest("hex");
+
+      this.logger_.info(`- Generated hash: ${hash}`);
 
       // Construct payment session data
       const data: SenangPaySessionData = {
@@ -167,7 +190,7 @@ class SenangPayService extends AbstractPaymentProvider<SenangPayOptions> {
     try {
       this.logger_.info(`[SenangPay] Authorizing payment...`);
       const status = await this.getPaymentStatus(paymentSessionData);
-
+      console.log({ status });
       if (status === PaymentSessionStatus.ERROR) {
         throw new MedusaError(
           MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR,
@@ -271,29 +294,58 @@ class SenangPayService extends AbstractPaymentProvider<SenangPayOptions> {
   }
 
   async getWebhookActionAndData(data: {
-    data: Record<string, unknown>;
+    data: SenangPayCallbackParams;
     rawData: string | Buffer;
     headers: Record<string, unknown>;
   }): Promise<WebhookActionResult> {
-    const { status_id, order_id, transaction_id, msg, hash, amount } =
-      data.data;
+    const {
+      status_id,
+      order_id,
+      transaction_id,
+      msg,
+      hash,
+      amount,
+      name,
+      email,
+      phone,
+      type,
+    } = data.data;
 
     const toBeHashed =
       this.options.secretKey + status_id + order_id + transaction_id + msg;
+
+    this.logger_.info(`[SenangPay] Webhook Hash Verification:`);
+    this.logger_.info(`- Secret Key: ${this.options.secretKey}`);
+    this.logger_.info(`- Status ID: ${status_id}`);
+    this.logger_.info(`- Order ID: ${order_id}`);
+    this.logger_.info(`- Transaction ID: ${transaction_id}`);
+    this.logger_.info(`- Message: ${msg}`);
+    this.logger_.info(`- To be hashed string: ${toBeHashed}`);
+    this.logger_.info(`- Received hash: ${hash}`);
 
     const calculatedHash = crypto
       .createHmac("sha256", this.options.secretKey)
       .update(toBeHashed)
       .digest("hex");
 
+    this.logger_.info(`- Calculated hash: ${calculatedHash}`);
+
+    console.log({ calculatedHash, hash });
     if (calculatedHash !== hash) {
       throw new Error("Invalid hash");
     }
 
     const webhookData = {
       status: status_id,
+      order_id: order_id as string,
+      amount: amount as string,
       session_id: order_id as string,
-      amount: amount ? new BigNumber(amount as string) : new BigNumber(0),
+      transaction_id: transaction_id as string,
+      msg: msg as string,
+      name: name as string,
+      email: email as string,
+      phone: phone as string,
+      type: type as string,
     };
 
     switch (status_id) {
